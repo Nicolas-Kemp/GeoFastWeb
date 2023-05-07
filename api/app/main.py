@@ -37,18 +37,24 @@ async def h3_on_the_fly_api(bottom_lat: float = -35.04,
     geom = box(*bbox)
     z_level = int(z_level)
 
-    if z_level >= 8:
+    if z_level > 12:
+        z_level = 9
+    elif z_level == 12:
         z_level = 8
-    elif z_level <= 8 and z_level >= 7:
+    elif z_level <= 11 and z_level >= 10:
         z_level = 7
-    elif z_level <= 6 and z_level >= 5:
+    elif z_level <= 9 and z_level >= 8:
         z_level = 6
-    elif z_level == 4:
+    elif z_level <= 7 and z_level >= 6:
         z_level = 5
-    elif z_level == 3:
+    elif z_level <= 5 and z_level >= 4:
         z_level = 4
-    elif z_level == 2:
+    elif z_level == 4:
         z_level = 3
+    elif z_level == 3:
+        z_level = 3
+    elif z_level == 2:
+        z_level = 2
     elif z_level <= 1:
         z_level = 1
 
@@ -64,4 +70,4 @@ async def h3_on_the_fly_api(bottom_lat: float = -35.04,
                                        crs="EPSG:4326"
                                        ).to_json()
 
-    return Response(content=json_h3_on_the_fly, media_type="application/json")
+    return json_h3_on_the_fly

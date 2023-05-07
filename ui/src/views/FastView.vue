@@ -2,7 +2,7 @@
     <div>
       <HelloFastAPI />
     </div>
-  </template>
+</template>
   
   <script>
   import HelloFastAPI from '../components/HelloFastAPI.vue';

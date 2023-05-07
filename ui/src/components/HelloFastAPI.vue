@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h1>{{ fastapiResponse }}</h1>
+        <p>{{ fastapiResponse }}</p>
     </div>
 </template>
 

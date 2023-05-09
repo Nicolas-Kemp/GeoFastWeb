@@ -15,6 +15,7 @@ import HelloWorld from './components/HelloWorld.vue'
         <RouterLink to="/about">About</RouterLink>
         <RouterLink to="/hello-fastapi">FastAPI</RouterLink>
         <RouterLink to="/map">Map</RouterLink>
+        <RouterLink to="/three-gis">ThreeD</RouterLink>
       </nav>
     </div>
   </header>

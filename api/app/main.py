@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Query
 from fastapi import Response
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware  # NEW
 import geopandas as gpd
 from datetime import datetime
@@ -25,7 +26,8 @@ async def h3_on_the_fly_api(bottom_lat: float = -35.04,
                             top_lat: float = -22.04,
                             left_long: float = 14.97,
                             right_long: float = 34.92,
-                        z_level: int = 3):
+                        z_level: int = 3,
+                        return_type: str = ''):
     
     bounding_box = [left_long, bottom_lat, right_long, top_lat]
 
@@ -70,4 +72,7 @@ async def h3_on_the_fly_api(bottom_lat: float = -35.04,
                                        crs="EPSG:4326"
                                        ).to_json()
 
-    return json_h3_on_the_fly
+    if return_type == 'json':
+        return Response(content=json_h3_on_the_fly, media_type="application/json")
+    else:
+        return json_h3_on_the_fly

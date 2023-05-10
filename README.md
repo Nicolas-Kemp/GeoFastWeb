@@ -19,4 +19,4 @@ To get started with this template, follow these steps:
 
 1. Clone the repository:
 
-            git clone
+            git clone https://github.com/Nicolas-Kemp/GeoFastWeb.git

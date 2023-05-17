@@ -6,6 +6,11 @@ import geopandas as gpd
 from datetime import datetime
 from shapely.geometry import box, Polygon
 import h3
+import app.threed_functions as tf
+import os
+import json
+
+dirname = os.path.dirname(__file__)
 
 app = FastAPI()
 app.add_middleware(
@@ -19,6 +24,14 @@ app.add_middleware(
 @app.get("/")
 def read_root(text: str = ' '):
     return {"Hello": "From the other side" + text}
+
+
+@app.get("/threetiff")
+def threetif_api():
+    tiff_toget = os.path.join(dirname, 'static/tiff/tablemountain.tiff')
+    dict_toget = tf.import_spatial_layer(tiff_toget, "aoi").object_dict()
+
+    return json.dumps(dict_toget)
 
 
 @app.get("/h3_on_the_fly")

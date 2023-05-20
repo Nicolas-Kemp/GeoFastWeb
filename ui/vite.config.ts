@@ -13,7 +13,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '@assets': path.resolve(__dirname, './src/assets')
+      '@assets': path.resolve(__dirname, './src/assets'),
+      '@core': path.resolve(__dirname, './src/core'),
+      '@modules': path.resolve(__dirname, './node_modules')
     }
   }
 })

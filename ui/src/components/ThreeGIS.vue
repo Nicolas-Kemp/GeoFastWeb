@@ -5,6 +5,9 @@
 <script>
 import * as THREE from 'three';
 import { MapControls } from 'three/addons/controls/MapControls.js';
+import { camera } from '@core/camera.ts'
+//import { renderer, onWindowResize } from '@core/renderer.ts'
+
 import axios from 'axios';
 
 import tableMountainImg from '@assets/image/tablemountain.jpeg'
@@ -40,11 +43,18 @@ methods: {
         }
     },
 
-    
+
 
 },
 
 mounted() {
+
+
+
+
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setClearColor( 0x263740, 1);
 
     window.addEventListener( 'resize', onWindowResize, false );
     function onWindowResize(){
@@ -57,23 +67,17 @@ mounted() {
 
     }
 
-
-
-
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.0001, 1000 );
-
-    const renderer = new THREE.WebGLRenderer();
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    renderer.setClearColor( 0x263740, 1);
     document.getElementById("webgl_id").appendChild(renderer.domElement);
+    onWindowResize()
+
 
     const geometry = new THREE.BoxGeometry( 1, 1, 1 );
     const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
     const cube = new THREE.Mesh( geometry, material );
     scene.add( cube );
 
-    camera.position.z = 5;
+
     const light = new THREE.AmbientLight( 0xFFFF00, 0.5 ); // soft white light
     scene.add( light );
 

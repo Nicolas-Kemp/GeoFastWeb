@@ -21,6 +21,6 @@ controls.keys = {
 }
 
 controls.maxPolarAngle = Math.PI/2;
-controls.zoomSpeed = 0.04;
+controls.zoomSpeed = 0.4;
 controls.position0 = 0;
 controls.screenSpacePanning = false;

@@ -76,7 +76,7 @@ methods: {
             terrainMap.material.vertexColors = false;
             terrainMap.material.needsUpdate = true;
             
-            console.log(terrainMap)         
+            //console.log(terrainMap)         
             },
 
             // onProgress callback currently not supported
@@ -94,10 +94,12 @@ methods: {
 
 },
 
+
+
 async mounted() {
 
     const scene = new THREE.Scene();
-    document.getElementById("webgl_id").appendChild(renderer.domElement);
+    const canvas = document.getElementById("webgl_id").appendChild(renderer.domElement);
 
     scene.add( cube );
 
@@ -140,6 +142,7 @@ async mounted() {
 
     controls.target.set(tableMountainDict.aoi_centroid[1],0.001,tableMountainDict.aoi_centroid[0]);
     controls.update();
+
 
 },
 };

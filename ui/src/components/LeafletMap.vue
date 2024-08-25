@@ -1,6 +1,7 @@
 <template>
     <div id="container">
-      <div id="mapContainer"></div>
+        <img src="https://ogc.afrigis.co.za/mapservice/multichoice/wms?authkey=5ce3869b-5418-4e8c-935d-f7ac5e5bad2e&REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=mc_installer_travel_bands&STYLE=multichoice_travelband_12500" />
+        <div id="mapContainer"></div>
     </div>
 </template>
 
@@ -26,6 +27,7 @@ export default {
         hexData: [],
         uber_hex: L.geoJSON(),
         uber_hex_l2: L.geoJSON(),
+
         
         }
 
@@ -43,16 +45,62 @@ export default {
                 maxZoom: 18,
             }
         ).addTo(this.map);
-
+        //this.wmsCall();
+        this.geotripz();
+        this.geotripzWMS();
         this.mapElements();
     },
 
     async mapElements(){
       let mapElement = this.map;
       let ref = this;
-      mapElement.on('zoomend, moveend', async function(e) {
-        ref.run()
-      });
+    //   mapElement.on('zoomend, moveend', async function(e) {
+    //     ref.run()
+    //   });
+
+    },
+
+    async geotripz() {
+
+        try {
+        const response = await axios.get(
+            `http://127.0.0.1:80/geotripz`, {
+            params: {
+
+                love_it: 'high_mountains_area',
+                like_it: 'Tourism Attraction',
+                rather_not: '',
+                noway: 'HIGHWAY',
+
+                }
+            }
+        );
+
+        return response.data;
+
+        } catch (error) {
+            console.log(error);
+        }
+    },
+
+    async geotripzWMS(){
+
+        let url = 'https://dev-ogc.afrigis.co.za/mapservice/demo/wms?authkey=2db8a489-237a-42b0-a075-013780de0180'
+
+        let geotripzLayer = 'geotripz_h3_output'
+        let geotripzStyle = 'geotripz_likes'
+
+
+        let geotripz_prestine_hotspots = L.tileLayer.wms(url, {
+            layers: geotripzLayer,
+            styles: geotripzStyle,
+            transparent: true,
+            opacity: 1,
+            format: 'image/png',
+            tiled: true
+        }).addTo(this.map);
+
+        console.log(geotripz_prestine_hotspots)
 
     },
 
@@ -72,7 +120,6 @@ export default {
 
         this.map.removeLayer(this.uber_hex);
         this.uber_hex = JSON.parse(this.hexData);
-
         this.uber_hex = L.geoJSON(this.uber_hex);
         this.uber_hex.setStyle({ 
                                 color: "#B39102",
@@ -80,7 +127,67 @@ export default {
                                 fillOpacity:0
                             });
         this.uber_hex.addTo(this.map);
+
+        
     },
+
+    async wmsCall(){
+
+        let url = 'https://ogc.afrigis.co.za/mapservice/multichoice/wms?authkey=5ce3869b-5418-4e8c-935d-f7ac5e5bad2e'
+
+        let mcInstaller = 'mc_installer_location'
+        let mcTravelBand = 'mc_installer_travel_bands'
+        let mcInfluenceBand = 'mc_influence_bands'
+
+        let styleTravelband_12500 = 'multichoice_travelband_12500'
+        let styleTravelband_25000 = 'multichoice_travelband_25000'
+        let styleTravelband_50000 = 'multichoice_travelband_50000'
+
+        // let mcInfluenceBandWMS = L.tileLayer.wms(url, {
+        //     layers: mcInfluenceBand,
+        //     transparent: true,
+        //     opacity: 1,
+        //     format: 'image/png',
+        //     tiled: true
+        // }).addTo(this.map);
+
+        let mcTravelband_50000WMS = L.tileLayer.wms(url, {
+            layers: mcTravelBand,
+            styles: styleTravelband_50000,
+            transparent: true,
+            opacity: 1,
+            format: 'image/png',
+            tiled: true
+        }).addTo(this.map);
+
+        let mcTravelband_25000WMS = L.tileLayer.wms(url, {
+            layers: mcTravelBand,
+            styles: styleTravelband_25000,
+            transparent: true,
+            opacity: 1,
+            format: 'image/png',
+            tiled: true
+        }).addTo(this.map);
+
+        let mcTravelband_12500WMS = L.tileLayer.wms(url, {
+            layers: mcTravelBand,
+            styles: styleTravelband_12500,
+            transparent: true,
+            opacity: 1,
+            format: 'image/png',
+            tiled: true
+        }).addTo(this.map);
+
+        let mcInstallerWMS= L.tileLayer.wms(url, {
+            layers: mcInstaller,
+            transparent: true,
+            opacity: 1,
+            format: 'image/png',
+            tiled: true
+        }).addTo(this.map);
+
+    },
+       
     
     /*'southwest_lng,southwest_lat,northeast_lng,northeast_lat'*/
     async getData(zoomLevel, leftLong, bottomLat, rightLong, topLat) {
@@ -108,8 +215,8 @@ export default {
 
     async mounted() {
         this.setupLeafletMap();
-        this.uber_hex.addTo(this.map);
-        this.hexData = await this.run();  
+        //this.uber_hex.addTo(this.map);
+        //this.hexData = await this.run();  
     },
 
 

@@ -9,7 +9,7 @@
 import CesiumMap from '../components/CesiumMap.vue';
 
 export default {
-    name: 'cLeafletMap',
+    name: 'cCesiumMap',
     components: {
         CesiumMap,
     },

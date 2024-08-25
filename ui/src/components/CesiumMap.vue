@@ -2,609 +2,186 @@
     <div>
     <div id="cesiumContainer" class="fullSize"></div>
     <div id="loadingOverlay"><h1>Loading...</h1></div>
-    <div id="toolbar"></div>
+    <div id="toolbar">
+      <select class="cesium-button" id="dropdown">
+        <option value="0">Color By Building Material</option>
+        <option value="1">Color By Distance To Selected Location</option>
+        <option value="2">Highlight Residential Buildings</option>
+        <option value="3">Show Office Buildings Only</option>
+        <option value="4">Show Apartment Buildings Only</option>
+      </select>
+      <table class="infoPanel">
+        <tbody>
+          <tr>
+            <td>Click on a building to select as the central location</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     </div>
 </template>
+
+<style scoped>
+#cesiumContainer{
+ width: 80vw;
+ height: 100vh;
+ background-color: aquamarine;
+}
+</style>
   
 <script>
-Cesium.Math.setRandomNumberSeed(1234);
-
-const viewer = new Cesium.Viewer("cesiumContainer", { infoBox: false });
-const entities = viewer.entities;
-
-let i;
-let height;
-let positions;
-const stripeMaterial = new Cesium.StripeMaterialProperty({
-  evenColor: Cesium.Color.WHITE.withAlpha(0.5),
-  oddColor: Cesium.Color.BLUE.withAlpha(0.5),
-  repeat: 5.0,
+// How to use the 3D Tiles Styling language to style individual features, like buildings.
+// Styling language specification: https://github.com/CesiumGS/3d-tiles/tree/main/specification/Styling
+const viewer = new Cesium.Viewer("cesiumContainer", {
+  terrain: Cesium.Terrain.fromWorldTerrain(),
 });
+const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
 
-entities.add({
-  rectangle: {
-    coordinates: Cesium.Rectangle.fromDegrees(-92.0, 20.0, -86.0, 27.0),
-    outline: true,
-    outlineColor: Cesium.Color.WHITE,
-    outlineWidth: 4,
-    stRotation: Cesium.Math.toRadians(45),
-    material: stripeMaterial,
-  },
-});
+// // Add Cesium OSM buildings to the scene as our example 3D Tileset.
+// const osmBuildingsTileset = await Cesium.createOsmBuildingsAsync();
+// viewer.scene.primitives.add(osmBuildingsTileset);
 
-entities.add({
-  polygon: {
-    hierarchy: new Cesium.PolygonHierarchy(
-      Cesium.Cartesian3.fromDegreesArray([
-        -107.0,
-        27.0,
-        -107.0,
-        22.0,
-        -102.0,
-        23.0,
-        -97.0,
-        21.0,
-        -97.0,
-        25.0,
-      ])
-    ),
-    outline: true,
-    outlineColor: Cesium.Color.WHITE,
-    outlineWidth: 4,
-    material: stripeMaterial,
-  },
-});
+// // Set the initial camera to look at Seattle
+// viewer.scene.camera.setView({
+//   destination: Cesium.Cartesian3.fromDegrees(-122.3472, 47.598, 370),
+//   orientation: {
+//     heading: Cesium.Math.toRadians(10),
+//     pitch: Cesium.Math.toRadians(-10),
+//   },
+// });
 
-entities.add({
-  position: Cesium.Cartesian3.fromDegrees(-80.0, 25.0),
-  ellipse: {
-    semiMinorAxis: 300000.0,
-    semiMajorAxis: 500000.0,
-    rotation: Cesium.Math.toRadians(-40.0),
-    outline: true,
-    outlineColor: Cesium.Color.WHITE,
-    outlineWidth: 4,
-    stRotation: Cesium.Math.toRadians(22),
-    material: stripeMaterial,
-  },
-});
+// // Styling functions
 
-entities.add({
-  position: Cesium.Cartesian3.fromDegrees(-72.0, 25.0),
-  ellipse: {
-    semiMinorAxis: 250000.0,
-    semiMajorAxis: 250000.0,
-    rotation: Cesium.Math.toRadians(-40.0),
-    outline: true,
-    outlineColor: Cesium.Color.WHITE,
-    outlineWidth: 4,
-    stRotation: Cesium.Math.toRadians(90),
-    material: stripeMaterial,
-  },
-});
+// // Color by material checks for null values since not all
+// // buildings have the material property.
+// function colorByMaterial() {
+//   osmBuildingsTileset.style = new Cesium.Cesium3DTileStyle({
+//     defines: {
+//       material: "${feature['building:material']}",
+//     },
+//     color: {
+//       conditions: [
+//         ["${material} === null", "color('white')"],
+//         ["${material} === 'glass'", "color('skyblue', 0.5)"],
+//         ["${material} === 'concrete'", "color('grey')"],
+//         ["${material} === 'brick'", "color('indianred')"],
+//         ["${material} === 'stone'", "color('lightslategrey')"],
+//         ["${material} === 'metal'", "color('lightgrey')"],
+//         ["${material} === 'steel'", "color('lightsteelblue')"],
+//         ["true", "color('white')"], // This is the else case
+//       ],
+//     },
+//   });
+// }
 
-entities.add({
-  rectangle: {
-    coordinates: Cesium.Rectangle.fromDegrees(
-      -118.0,
-      38.0,
-      -116.0,
-      40.0
-    ),
-    extrudedHeight: 500000.0,
-    outline: true,
-    outlineColor: Cesium.Color.WHITE,
-    outlineWidth: 4,
-    stRotation: Cesium.Math.toRadians(45),
-    material: Cesium.Color.fromRandom({ alpha: 1.0 }),
-  },
-});
+// function highlightAllResidentialBuildings() {
+//   osmBuildingsTileset.style = new Cesium.Cesium3DTileStyle({
+//     color: {
+//       conditions: [
+//         [
+//           "${feature['building']} === 'apartments' || ${feature['building']} === 'residential'",
+//           "color('cyan', 0.9)",
+//         ],
+//         [true, "color('white')"],
+//       ],
+//     },
+//   });
+// }
 
-entities.add({
-  position: Cesium.Cartesian3.fromDegrees(-117.0, 35.0),
-  ellipse: {
-    semiMinorAxis: 100000.0,
-    semiMajorAxis: 200000.0,
-    height: 100000.0,
-    extrudedHeight: 200000.0,
-    rotation: Cesium.Math.toRadians(90.0),
-    outline: true,
-    outlineColor: Cesium.Color.WHITE,
-    outlineWidth: 4,
-    material: Cesium.Color.fromRandom({ alpha: 1.0 }),
-  },
-});
+// function showByBuildingType(buildingType) {
+//   switch (buildingType) {
+//     case "office":
+//       osmBuildingsTileset.style = new Cesium.Cesium3DTileStyle({
+//         show: "${feature['building']} === 'office'",
+//       });
+//       break;
+//     case "apartments":
+//       osmBuildingsTileset.style = new Cesium.Cesium3DTileStyle({
+//         show: "${feature['building']} === 'apartments'",
+//       });
+//       break;
+//     default:
+//       break;
+//   }
+// }
 
-entities.add({
-  polygon: {
-    hierarchy: new Cesium.PolygonHierarchy(
-      Cesium.Cartesian3.fromDegreesArray([
-        -118.0,
-        30.0,
-        -115.0,
-        30.0,
-        -117.1,
-        31.1,
-        -118.0,
-        33.0,
-      ])
-    ),
-    height: 300000.0,
-    extrudedHeight: 700000.0,
-    outline: true,
-    outlineColor: Cesium.Color.WHITE,
-    outlineWidth: 4,
-    material: Cesium.Color.fromRandom({ alpha: 1.0 }),
-  },
-});
+// // Color the buildings based on their distance from a selected central location
+// function colorByDistanceToCoordinate(pickedLatitude, pickedLongitude) {
+//   osmBuildingsTileset.style = new Cesium.Cesium3DTileStyle({
+//     defines: {
+//       distance: `distance(vec2(\${feature['cesium#longitude']}, \${feature['cesium#latitude']}), vec2(${pickedLongitude},${pickedLatitude}))`,
+//     },
+//     color: {
+//       conditions: [
+//         ["${distance} > 0.014", "color('blue')"],
+//         ["${distance} > 0.010", "color('green')"],
+//         ["${distance} > 0.006", "color('yellow')"],
+//         ["${distance} > 0.0001", "color('red')"],
+//         ["true", "color('white')"],
+//       ],
+//     },
+//   });
+// }
 
-entities.add({
-  position: Cesium.Cartesian3.fromDegrees(-70.0, 45.0, 100000.0),
-  cylinder: {
-    hierarchy: new Cesium.PolygonHierarchy(
-      Cesium.Cartesian3.fromDegreesArray([
-        -118.0,
-        30.0,
-        -115.0,
-        30.0,
-        -117.1,
-        31.1,
-        -118.0,
-        33.0,
-      ])
-    ),
-    length: 200000.0,
-    topRadius: 150000.0,
-    bottomRadius: 150000.0,
-    outline: true,
-    outlineColor: Cesium.Color.WHITE,
-    outlineWidth: 4,
-    material: Cesium.Color.fromRandom({ alpha: 1.0 }),
-  },
-});
+// // When dropdown option is not "Color By Distance To Selected Location",
+// // remove the left click input event for selecting a central location
+// function removeCoordinatePickingOnLeftClick() {
+//   document.querySelector(".infoPanel").style.visibility = "hidden";
+//   handler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK);
+// }
 
-for (i = 0; i < 5; ++i) {
-  height = 100000.0 + 200000.0 * i;
-  entities.add({
-    position: Cesium.Cartesian3.fromDegrees(-106.0, 45.0, height),
-    box: {
-      dimensions: new Cesium.Cartesian3(90000.0, 90000.0, 90000.0),
-      outline: true,
-      outlineColor: Cesium.Color.WHITE,
-      outlineWidth: 2,
-      material: Cesium.Color.fromRandom({ alpha: 0.5 }),
-    },
-  });
+// // Add event listeners to dropdown menu options
+// document.querySelector(".infoPanel").style.visibility = "hidden";
+// const menu = document.getElementById("dropdown");
 
-  entities.add({
-    position: Cesium.Cartesian3.fromDegrees(-102.0, 45.0, height),
-    ellipsoid: {
-      radii: new Cesium.Cartesian3(45000.0, 45000.0, 90000.0),
-      outline: true,
-      outlineColor: Cesium.Color.WHITE,
-      outlineWidth: 2,
-      material: Cesium.Color.fromRandom({ alpha: 0.5 }),
-    },
-  });
+// menu.options[0].onselect = function () {
+//   removeCoordinatePickingOnLeftClick();
+//   colorByMaterial();
+// };
 
-  entities.add({
-    position: Cesium.Cartesian3.fromDegrees(-98.0, 45.0, height),
-    ellipsoid: {
-      radii: new Cesium.Cartesian3(67500.0, 67500.0, 67500.0),
-      outline: true,
-      outlineColor: Cesium.Color.WHITE,
-      outlineWidth: 2,
-      material: Cesium.Color.fromRandom({ alpha: 0.5 }),
-    },
-  });
-}
+// menu.options[1].onselect = function () {
+//   // Default to Space Needle as the central location
+//   colorByDistanceToCoordinate(47.62051, -122.34931);
+//   document.querySelector(".infoPanel").style.visibility = "visible";
+//   // Add left click input to select a building to and extract its coordinates
+//   handler.setInputAction(function (movement) {
+//     viewer.selectedEntity = undefined;
+//     const pickedBuilding = viewer.scene.pick(movement.position);
+//     if (pickedBuilding) {
+//       const pickedLatitude = pickedBuilding.getProperty(
+//         "cesium#latitude"
+//       );
+//       const pickedLongitude = pickedBuilding.getProperty(
+//         "cesium#longitude"
+//       );
+//       colorByDistanceToCoordinate(pickedLatitude, pickedLongitude);
+//     }
+//   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+// };
 
-entities.add({
-  wall: {
-    positions: Cesium.Cartesian3.fromDegreesArray([
-      -95.0,
-      50.0,
-      -85.0,
-      50.0,
-      -75.0,
-      50.0,
-    ]),
-    maximumHeights: [500000, 1000000, 500000],
-    minimumHeights: [0, 500000, 0],
-    outline: true,
-    outlineColor: Cesium.Color.LIGHTGRAY,
-    outlineWidth: 4,
-    material: Cesium.Color.fromRandom({ alpha: 0.7 }),
-  },
-});
+// menu.options[2].onselect = function () {
+//   removeCoordinatePickingOnLeftClick();
+//   highlightAllResidentialBuildings();
+// };
 
-entities.add({
-  rectangle: {
-    coordinates: Cesium.Rectangle.fromDegrees(-92.0, 30.0, -85.0, 40.0),
-    material: stripeMaterial,
-  },
-});
+// menu.options[3].onselect = function () {
+//   removeCoordinatePickingOnLeftClick();
+//   showByBuildingType("office");
+// };
 
-entities.add({
-  polygon: {
-    hierarchy: {
-      positions: Cesium.Cartesian3.fromDegreesArray([
-        -109.0,
-        30.0,
-        -95.0,
-        30.0,
-        -95.0,
-        40.0,
-        -109.0,
-        40.0,
-      ]),
-      holes: [
-        {
-          positions: Cesium.Cartesian3.fromDegreesArray([
-            -107.0,
-            31.0,
-            -107.0,
-            39.0,
-            -97.0,
-            39.0,
-            -97.0,
-            31.0,
-          ]),
-          holes: [
-            {
-              positions: Cesium.Cartesian3.fromDegreesArray([
-                -105.0,
-                33.0,
-                -99.0,
-                33.0,
-                -99.0,
-                37.0,
-                -105.0,
-                37.0,
-              ]),
-              holes: [
-                {
-                  positions: Cesium.Cartesian3.fromDegreesArray([
-                    -103.0,
-                    34.0,
-                    -101.0,
-                    34.0,
-                    -101.0,
-                    36.0,
-                    -103.0,
-                    36.0,
-                  ]),
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    material: stripeMaterial,
-  },
-});
+// menu.options[4].onselect = function () {
+//   removeCoordinatePickingOnLeftClick();
+//   showByBuildingType("apartments");
+// };
 
-entities.add({
-  position: Cesium.Cartesian3.fromDegrees(-80.0, 35.0),
-  ellipse: {
-    semiMinorAxis: 200000.0,
-    semiMajorAxis: 500000.0,
-    rotation: Cesium.Math.toRadians(30.0),
-    material: stripeMaterial,
-  },
-});
+// menu.onchange = function () {
+//   Sandcastle.reset();
+//   const item = menu.options[menu.selectedIndex];
+//   if (item && typeof item.onselect === "function") {
+//     item.onselect();
+//   }
+// };
 
-entities.add({
-  position: Cesium.Cartesian3.fromDegrees(-72.0, 35.0),
-  ellipse: {
-    semiMinorAxis: 200000.0,
-    semiMajorAxis: 200000.0,
-    rotation: Cesium.Math.toRadians(30.0),
-    material: stripeMaterial,
-  },
-});
-
-entities.add({
-  rectangle: {
-    coordinates: Cesium.Rectangle.fromDegrees(
-      -110.0,
-      38.0,
-      -107.0,
-      40.0
-    ),
-    height: 700000.0,
-    extrudedHeight: 1000000.0,
-    rotation: Cesium.Math.toRadians(45),
-    material: Cesium.Color.fromRandom({ alpha: 1.0 }),
-  },
-});
-
-entities.add({
-  position: Cesium.Cartesian3.fromDegrees(-110.0, 35.0),
-  ellipse: {
-    semiMinorAxis: 100000.0,
-    semiMajorAxis: 200000.0,
-    height: 300000.0,
-    extrudedHeight: 700000.0,
-    rotation: Cesium.Math.toRadians(-40.0),
-    material: Cesium.Color.fromRandom({ alpha: 1.0 }),
-  },
-});
-
-entities.add({
-  polygon: {
-    hierarchy: new Cesium.PolygonHierarchy(
-      Cesium.Cartesian3.fromDegreesArray([
-        -113.0,
-        30.0,
-        -110.0,
-        30.0,
-        -110.0,
-        33.0,
-        -111.5,
-        31.0,
-        -113.0,
-        33.0,
-      ])
-    ),
-    extrudedHeight: 300000.0,
-    material: Cesium.Color.fromRandom({ alpha: 1.0 }),
-  },
-});
-
-entities.add({
-  position: Cesium.Cartesian3.fromDegrees(-70.0, 40.0, 200000.0),
-  cylinder: {
-    hierarchy: new Cesium.PolygonHierarchy(
-      Cesium.Cartesian3.fromDegreesArray([
-        -118.0,
-        30.0,
-        -115.0,
-        30.0,
-        -117.1,
-        31.1,
-        -118.0,
-        33.0,
-      ])
-    ),
-    length: 400000.0,
-    topRadius: 0.0,
-    bottomRadius: 200000.0,
-    material: Cesium.Color.fromRandom({ alpha: 1.0 }),
-  },
-});
-
-for (i = 0; i < 5; ++i) {
-  height = 200000.0 * i;
-
-  entities.add({
-    position: Cesium.Cartesian3.fromDegrees(-65.0, 35.0),
-    ellipse: {
-      semiMinorAxis: 200000.0,
-      semiMajorAxis: 200000.0,
-      height: height,
-      material: Cesium.Color.fromRandom({ alpha: 0.5 }),
-    },
-  });
-
-  entities.add({
-    rectangle: {
-      coordinates: Cesium.Rectangle.fromDegrees(
-        -67.0,
-        27.0,
-        -63.0,
-        32.0
-      ),
-      height: height,
-      material: Cesium.Color.fromRandom({ alpha: 0.5 }),
-    },
-  });
-}
-
-for (i = 0; i < 5; ++i) {
-  height = 100000.0 + 200000.0 * i;
-  entities.add({
-    position: Cesium.Cartesian3.fromDegrees(-108.0, 45.0, height),
-    box: {
-      dimensions: new Cesium.Cartesian3(90000.0, 90000.0, 90000.0),
-      material: Cesium.Color.fromRandom({ alpha: 1.0 }),
-    },
-  });
-
-  entities.add({
-    position: Cesium.Cartesian3.fromDegrees(-104.0, 45.0, height),
-    ellipsoid: {
-      radii: new Cesium.Cartesian3(45000.0, 45000.0, 90000.0),
-      material: Cesium.Color.fromRandom({ alpha: 1.0 }),
-    },
-  });
-
-  entities.add({
-    position: Cesium.Cartesian3.fromDegrees(-100.0, 45.0, height),
-    ellipsoid: {
-      radii: new Cesium.Cartesian3(67500.0, 67500.0, 67500.0),
-      material: Cesium.Color.fromRandom({ alpha: 1.0 }),
-    },
-  });
-}
-
-positions = [];
-for (i = 0; i < 40; ++i) {
-  positions.push(Cesium.Cartesian3.fromDegrees(-100.0 + i, 15.0));
-}
-
-entities.add({
-  polyline: {
-    positions: positions,
-    width: 10.0,
-    material: new Cesium.PolylineGlowMaterialProperty({
-      color: Cesium.Color.DEEPSKYBLUE,
-      glowPower: 0.25,
-    }),
-  },
-});
-
-positions = [];
-for (i = 0; i < 40; ++i) {
-  positions.push(Cesium.Cartesian3.fromDegrees(-100.0 + i, 9.0));
-}
-
-entities.add({
-  wall: {
-    positions: Cesium.Cartesian3.fromDegreesArrayHeights([
-      -90.0,
-      43.0,
-      100000.0,
-      -87.5,
-      45.0,
-      100000.0,
-      -85.0,
-      43.0,
-      100000.0,
-      -87.5,
-      41.0,
-      100000.0,
-      -90.0,
-      43.0,
-      100000.0,
-    ]),
-    material: new Cesium.CheckerboardMaterialProperty({
-      repeat: new Cesium.Cartesian2(20.0, 6.0),
-    }),
-  },
-});
-
-entities.add({
-  corridor: {
-    positions: Cesium.Cartesian3.fromDegreesArray([
-      -120.0,
-      45.0,
-      -125.0,
-      50.0,
-      -125.0,
-      55.0,
-    ]),
-    width: 100000,
-    material: Cesium.Color.fromRandom({ alpha: 1.0 }),
-  },
-});
-
-entities.add({
-  corridor: {
-    positions: Cesium.Cartesian3.fromDegreesArray([
-      -120.0,
-      45.0,
-      -125.0,
-      50.0,
-      -125.0,
-      55.0,
-    ]),
-    width: 100000,
-    height: 300000,
-    extrudedHeight: 400000,
-    material: Cesium.Color.fromRandom({ alpha: 0.7 }),
-  },
-});
-
-entities.add({
-  corridor: {
-    positions: Cesium.Cartesian3.fromDegreesArray([
-      -120.0,
-      45.0,
-      -125.0,
-      50.0,
-      -125.0,
-      55.0,
-    ]),
-    width: 100000,
-    height: 700000,
-    outline: true,
-    outlineColor: Cesium.Color.WHITE,
-    outlineWidth: 4,
-    material: Cesium.Color.fromRandom({ alpha: 0.7 }),
-  },
-});
-
-function starPositions(arms, rOuter, rInner) {
-  const angle = Math.PI / arms;
-  const pos = [];
-  for (let i = 0; i < 2 * arms; i++) {
-    const r = i % 2 === 0 ? rOuter : rInner;
-    const p = new Cesium.Cartesian2(
-      Math.cos(i * angle) * r,
-      Math.sin(i * angle) * r
-    );
-    pos.push(p);
-  }
-  return pos;
-}
-
-entities.add({
-  polylineVolume: {
-    positions: Cesium.Cartesian3.fromDegreesArrayHeights([
-      -102.0,
-      15.0,
-      100000.0,
-      -105.0,
-      20.0,
-      200000.0,
-      -110.0,
-      20.0,
-      100000.0,
-    ]),
-    shape: starPositions(7, 30000.0, 20000.0),
-    outline: true,
-    outlineColor: Cesium.Color.WHITE,
-    outlineWidth: 1,
-    material: Cesium.Color.fromRandom({ alpha: 1.0 }),
-  },
-});
-
-entities.add({
-  polylineVolume: {
-    positions: Cesium.Cartesian3.fromDegreesArray([
-      -102.0,
-      15.0,
-      -105.0,
-      20.0,
-      -110.0,
-      20.0,
-    ]),
-    shape: starPositions(7, 30000.0, 20000.0),
-    material: Cesium.Color.fromRandom({ alpha: 1.0 }),
-  },
-});
-
-function computeCircle(radius) {
-  const positions = [];
-  for (let i = 0; i < 360; i++) {
-    const radians = Cesium.Math.toRadians(i);
-    positions.push(
-      new Cesium.Cartesian2(
-        radius * Math.cos(radians),
-        radius * Math.sin(radians)
-      )
-    );
-  }
-  return positions;
-}
-
-entities.add({
-  polylineVolume: {
-    positions: Cesium.Cartesian3.fromDegreesArray([
-      -104.0,
-      13.0,
-      -107.0,
-      18.0,
-      -112.0,
-      18.0,
-    ]),
-    shape: computeCircle(40000.0),
-    material: Cesium.Color.WHITE,
-  },
-});
-
-viewer.zoomTo(viewer.entities);
+// colorByMaterial(); 
 
 </script>

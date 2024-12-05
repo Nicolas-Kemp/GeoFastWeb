@@ -6,6 +6,8 @@ services:
     ports:
         - 80:80
   ui:
+    environment:
+      PROXY_BASE_URL: "http://localhost:3080"
     build: ./ui
     ports:
         - 3000:3000

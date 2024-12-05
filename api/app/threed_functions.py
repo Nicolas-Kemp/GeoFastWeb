@@ -98,7 +98,7 @@ class RasterToThreeD:
         self.tiff_width = self.base_tiff.RasterXSize
         self.tiff_height = self.base_tiff.RasterYSize
         self.tiff_values = self.base_tiff.ReadAsArray()
-        #self.tiff_values = (tiff_values - tiff_values.min()) / tiff_values.ptp() * 0.01
+        self.tiff_values = (self.tiff_values - self.tiff_values.min()) / self.tiff_values.ptp() * 0.01
         self.tiff_ulx, self.tiff_xres, tiff_xskew, self.tiff_uly, tiff_yskew, self.tiff_yres = self.base_tiff.GetGeoTransform()
         self.tiff_lrx = self.tiff_ulx + (self.tiff_width * self.tiff_xres)
         self.tiff_lry = self.tiff_uly + (self.tiff_height * self.tiff_yres)

@@ -4,22 +4,31 @@ import HelloWorld from './components/HelloWorld.vue'
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-        <RouterLink to="/hello-fastapi">FastAPI</RouterLink>
-        <RouterLink to="/map">Map</RouterLink>
-        <RouterLink to="/three-gis">ThreeD</RouterLink>
-        <RouterLink to="/cesium-map">Cesium</RouterLink>
-      </nav>
-    </div>
-  </header>
+     <main class="container" id="main_container">
+        <nav>
+            <div class="logo">
+            <!--                     <img src="static/logo/gistechnic_logo.png" id="gistechnic_logo">-->
+                <h4>GEO-TECHNICS</h4>
+            </div>
+            <ul class="nav-links" id="navigation">
+                <li><a href="/">HOME</a></li>
+                <li><a href="/pygis">PYTHON</a></li>
+                <li><a href="/maps">CARTOGRAPHY</a></li>
+                <li><a href="/parks3d">ADVENTURE-3D</a></li>
+            </ul>
+            <div class = "boerie">
+                <div class = 'line1'></div>
+                <div class = 'line2'></div>
+                <div class = 'line3'></div>
+            </div>
+        </nav>
+        <div class="row">
+            <div class="col">
+            {% block content %}
+            {% endblock %}
+            </div>
+        </div>
+    </main>
 
   <RouterView />
 </template>

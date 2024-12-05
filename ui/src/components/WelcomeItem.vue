@@ -1,86 +1,146 @@
 <template>
-  <div class="item">
-    <i>
-      <slot name="icon"></slot>
-    </i>
-    <div class="details">
-      <h3>
-        <slot name="heading"></slot>
-      </h3>
-      <slot></slot>
-    </div>
-  </div>
+  <div ref="container" id="webgl_id"></div>
 </template>
 
-<style scoped>
-.item {
-  margin-top: 2rem;
-  display: flex;
-}
+<script>
+import * as THREE from 'three';
+import { camera } from '@core/camera.ts'
+import { renderer } from '@core/renderer.ts'
+import { controls } from '@core/controls.ts'
+import { cube } from '@core/geometries.ts'
+import { ambientLight, directionalLight } from '@core/lights.ts'
+//import { renderer, onWindowResize } from '@core/renderer.ts'
 
-.details {
-  flex: 1;
-  margin-left: 1rem;
-}
+import axios from 'axios';
+import fishRiverImg from '@assets/image/fishriver_walk_ex.jpeg'
+import fishRiverImg_alpha from '@assets/image/fishriver_walk_ex_alpha.jpeg'
 
-i {
-  display: flex;
-  place-items: center;
-  place-content: center;
-  width: 32px;
-  height: 32px;
+export default {
+name: 'ThreeJsExample',
 
-  color: var(--color-text);
-}
+data: function () {
 
-h3 {
-  font-size: 1.2rem;
-  font-weight: 500;
-  margin-bottom: 0.4rem;
-  color: var(--color-heading);
-}
+  return {
 
-@media (min-width: 1024px) {
-  .item {
-    margin-top: 0;
-    padding: 0.4rem 0 1rem calc(var(--section-gap) / 2);
   }
 
-  i {
-    top: calc(50% - 25px);
-    left: -26px;
-    position: absolute;
-    border: 1px solid var(--color-border);
-    background: var(--color-background);
-    border-radius: 8px;
-    width: 50px;
-    height: 50px;
+},
+
+methods: {
+
+  async getAPI(url_ext) {
+      try {
+
+      const response = await axios.get(
+          `http://127.0.0.1:80/`.concat(url_ext), {
+            params: {
+                      default_tiff: 'fishriver_hike_ex.tiff'
+            }
+          }
+      );
+
+      return response.data;
+
+      } catch (error) {
+      console.log(error);
+      }
+  },
+
+  getTerrain3D(){
+      return this.getAPI('threetiff')
+  },
+
+  getTerrainGeom(terrainDict){
+
+      let geom = new THREE.BufferGeometry();
+      geom.setIndex(terrainDict.aoi_indices);
+      geom.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array(terrainDict.aoi_vertices), 3 ) );
+      // geom.setAttribute( 'color', new THREE.BufferAttribute( new Float32Array(terrainDict.aoi_colour), 3 ) );
+      geom.setAttribute( 'uv', new THREE.BufferAttribute( new Float32Array(terrainDict.aoi_uvs), 2 ) );
+      geom.computeVertexNormals();
+      return geom
+
+  },
+
+  async getTerrainMat(terrainImg, terrainMap){
+      // load a resource
+      var loader = new THREE.TextureLoader();
+      loader.load(
+          // resource URL
+          terrainImg,
+
+          // onLoad callback
+          function ( texture ) {
+          // in this example we create the material when the texture is loaded
+          terrainMap.material.map = texture;
+          terrainMap.material.vertexColors = false;
+          terrainMap.material.needsUpdate = true;
+          
+          //console.log(terrainMap)         
+          },
+
+          // onProgress callback currently not supported
+          undefined,
+
+          // onError callback
+          function ( err ) {
+          console.error( 'An error happened.' );
+          
+          },
+      
+      );
+      
+  },
+
+},
+
+
+
+async mounted() {
+
+  const scene = new THREE.Scene();
+  const canvas = document.getElementById("webgl_id").appendChild(renderer.domElement);
+
+  scene.add( ambientLight );
+
+  function animate() {
+      requestAnimationFrame( animate );
+      cube.rotation.x += 0.001;
+      cube.rotation.y += 0.001;
+      controls.update();
+      renderer.render( scene, camera );
   }
 
-  .item:before {
-    content: ' ';
-    border-left: 1px solid var(--color-border);
-    position: absolute;
-    left: 0;
-    bottom: calc(50% + 25px);
-    height: calc(50% - 25px);
-  }
+  let aoi_centroid = [0,0]
+  controls.target.set(aoi_centroid[1],0,aoi_centroid[0]);
+  controls.update();
 
-  .item:after {
-    content: ' ';
-    border-left: 1px solid var(--color-border);
-    position: absolute;
-    left: 0;
-    top: calc(50% + 25px);
-    height: calc(50% - 25px);
-  }
+  animate();
 
-  .item:first-of-type:before {
-    display: none;
-  }
+  let fishRiverDict = JSON.parse(await this.getTerrain3D())
+ 
+  let tcTerrainDict = {
+                          color: 0xA6A4A1,
+                          vertexColors: true
+                      };
 
-  .item:last-of-type:after {
-    display: none;
-  }
-}
-</style>
+  let material_aoi = new THREE.MeshBasicMaterial(
+                                  tcTerrainDict
+                              );
+
+  let geometry_aoi = this.getTerrainGeom(fishRiverDict)
+  let aoi_map = new THREE.Mesh( geometry_aoi, material_aoi );
+  this.getTerrainMat(fishRiverImg, aoi_map)
+  scene.add( aoi_map );
+
+  camera.position.x = fishRiverDict.aoi_lry;
+  camera.position.y = 0.01;
+  camera.position.z = fishRiverDict.aoi_lrx;
+
+  controls.target.set(fishRiverDict.aoi_centroid[1],0.001,fishRiverDict.aoi_centroid[0]);
+  controls.update();
+
+
+},
+};
+</script>

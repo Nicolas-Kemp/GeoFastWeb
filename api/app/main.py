@@ -33,8 +33,8 @@ def read_root(text: str = ' '):
 
 
 @app.get("/threetiff")
-def threetif_api():
-    tiff_toget = os.path.join(dirname, 'static/tiff/tablemountain.tiff')
+def threetif_api(default_tiff: str='tablemountain.tiff'):
+    tiff_toget = os.path.join(dirname, 'static/tiff/'+default_tiff)
     dict_toget = tf.import_spatial_layer(tiff_toget, "aoi").object_dict()
 
     return json.dumps(dict_toget)

@@ -4,16 +4,16 @@
   
 <script>
 import * as THREE from 'three';
-import { camera } from '@core/camera.ts'
-import { renderer } from '@core/renderer.ts'
-import { controls } from '@core/controls.ts'
-import { cube } from '@core/geometries.ts'
-import { ambientLight, directionalLight } from '@core/lights.ts'
+import { camera } from '@core/camera'
+import { renderer } from '@core/renderer'
+import { controls } from '@core/controls'
+import { cube } from '@core/geometries'
+import { ambientLight, directionalLight } from '@core/lights'
 //import { renderer, onWindowResize } from '@core/renderer.ts'
 
 import axios from 'axios';
 
-import tableMountainImg from '@assets/image/tablemountain.jpeg'
+import tableMountainImg from '@assets/image/tablemountain_highres.jpeg'
 
 export default {
 name: 'ThreeJsExample',
@@ -29,26 +29,28 @@ data: function () {
 methods: {
 
     async getAPI(url_ext) {
-        try {
+      try {
 
-        const response = await axios.get(
-            `http://127.0.0.1:80/`.concat(url_ext), {
-            params: {
+      const response = await axios.get(
+          `http://127.0.0.1:80/`.concat(url_ext), {
+            params: { default_tiff:  'tablemountain_highres.tif',
+            bbox_str: '18.39375,-33.94782, 18.42981,-33.97617'
 
             }
-            }
-        );
+          }
+      );
 
-        return response.data;
+      return response.data;
 
-        } catch (error) {
-        console.log(error);
-        }
-    },
+      } catch (error) {
+      console.log(error);
+      }
+  },
 
-    getTerrain3D(){
-        return this.getAPI('threetiff')
-    },
+  getTerrain3D(geotiff){
+      //return this.getAPI('threetiff', { params: { default_tiff:  geotiff} })
+      return this.getAPI('threetiff')
+  },
 
     getTerrainGeom(terrainDict){
 

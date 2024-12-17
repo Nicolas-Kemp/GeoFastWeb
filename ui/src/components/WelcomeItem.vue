@@ -3,16 +3,17 @@
 </template>
 
 <script>
+
 import * as THREE from 'three';
-import { camera } from '@core/camera.ts'
-import { renderer } from '@core/renderer.ts'
-import { controls } from '@core/controls.ts'
-import { cube } from '@core/geometries.ts'
-import { ambientLight, directionalLight } from '@core/lights.ts'
+import { camera } from '@core/camera'
+import { renderer } from '@core/renderer'
+import { controls } from '@core/controls'
+import { cube } from '@core/geometries'
+import { ambientLight, directionalLight } from '@core/lights'
 //import { renderer, onWindowResize } from '@core/renderer.ts'
 
 import axios from 'axios';
-import fishRiverImg from '@assets/image/fishriver_walk_ex.jpeg'
+import fishRiverImg from '@assets/image/tablemountain_highres.jpeg'
 import fishRiverImg_alpha from '@assets/image/fishriver_walk_ex_alpha.jpeg'
 
 export default {
@@ -28,14 +29,12 @@ data: function () {
 
 methods: {
 
-  async getAPI(url_ext) {
+  async getAPI(url_ext, parama) {
       try {
 
       const response = await axios.get(
           `http://127.0.0.1:80/`.concat(url_ext), {
-            params: {
-                      default_tiff: 'fishriver_hike_ex.tiff'
-            }
+            parama
           }
       );
 
@@ -46,8 +45,8 @@ methods: {
       }
   },
 
-  getTerrain3D(){
-      return this.getAPI('threetiff')
+  getTerrain3D(geotiff){
+      return this.getAPI('threetiff', { params: { default_tiff:  geotiff} })
   },
 
   getTerrainGeom(terrainDict){
@@ -117,7 +116,7 @@ async mounted() {
 
   animate();
 
-  let fishRiverDict = JSON.parse(await this.getTerrain3D())
+  let fishRiverDict = JSON.parse(await this.getTerrain3D('tablemountain_highres.tif'))
  
   let tcTerrainDict = {
                           color: 0xA6A4A1,

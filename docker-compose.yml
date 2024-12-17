@@ -11,3 +11,15 @@ services:
     build: ./ui
     ports:
         - 3000:3000
+
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: nginx-app
+  #   volumes:
+  #     - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+  #   ports:
+  #     - 80:80
+  #   depends_on:
+  #     - ui
+
+

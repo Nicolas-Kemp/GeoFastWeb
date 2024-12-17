@@ -76,7 +76,7 @@ class RasterToThreeD:
 
     def object_dict(self):
         self.vertices = self.raster_vertexarray()
-        scale = max(self.vertices)-min(self.vertices)
+        scale = np.nanmax(self.vertices)-np.nanmin(self.vertices)
         self.indices = self.raster_indexarray()
         self.uvs = self.raster_uvarray()
         self.colours = self.raster_colors()
@@ -267,4 +267,3 @@ class PointToThreeD:
                 list_arrays.append([Px[i], 0, Py[i]])
 
         return list(np.array(list_arrays).flatten())
-

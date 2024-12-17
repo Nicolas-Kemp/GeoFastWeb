@@ -33,9 +33,13 @@ def read_root(text: str = ' '):
 
 
 @app.get("/threetiff")
-def threetif_api(default_tiff: str='tablemountain.tiff'):
+def threetif_api(default_tiff: str='tablemountain.tiff', bbox_str: str='18.39375,-33.94782, 18.42981,-33.97617'):
     tiff_toget = os.path.join(dirname, 'static/tiff/'+default_tiff)
-    dict_toget = tf.import_spatial_layer(tiff_toget, "aoi").object_dict()
+    bbox_lst = [float(item) for item in bbox_str.split(",") if item != '']
+    if len(bbox_lst)<4:
+        dict_toget = tf.import_spatial_layer(tiff_toget, "aoi").object_dict()
+    else:
+        dict_toget = tf.import_spatial_layer(tiff_toget, "aoi", tiff_bbox=bbox_lst).object_dict()
 
     return json.dumps(dict_toget)
 

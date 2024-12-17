@@ -4,11 +4,11 @@
   
   <script>
   import * as THREE from 'three';
-  import { camera } from '@core/camera.ts'
-  import { renderer } from '@core/renderer.ts'
-  import { controls } from '@core/controls.ts'
-  import { cube } from '@core/geometries.ts'
-  import { ambientLight, directionalLight } from '@core/lights.ts'
+  import { camera } from '@core/camera'
+  import { renderer } from '@core/renderer'
+  import { controls } from '@core/controls'
+  import { cube } from '@core/geometries'
+  import { ambientLight, directionalLight } from '@core/lights'
   //import { renderer, onWindowResize } from '@core/renderer.ts'
   
   import axios from 'axios';
@@ -35,7 +35,9 @@
         const response = await axios.get(
             `http://127.0.0.1:80/`.concat(url_ext), {
               params: {
-                        default_tiff: 'fishriver_hike_ex.tif'
+                        default_tiff: 'fishriver_hike_ex.tif',
+                        bbox_str: ''
+
               }
             }
         );
